@@ -1,11 +1,9 @@
-import mem.memov.idless.Node
+import mem.memov.idless.History
 
 @main def main: Unit =
-  val root = Node()
-  val source = Node()
-  val target = Node()
-  val (rootWithTarget, targetWithRoot) = root.addTarget(target)
-  val (sourceWithRoot, rootWithSource) = source.addTarget(rootWithTarget)
+  val history = History()
+  val singleLink = history.connectRootToRoot
+  val twoTargets = singleLink.connectFirstToRoot(0)
 
 
 
