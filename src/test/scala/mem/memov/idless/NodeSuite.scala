@@ -57,4 +57,22 @@ class NodeSuite extends AnyFunSuite {
     assert(modifiedSource.getTargets == List(modifiedNode))
     assert(modifiedSource.hasTarget(modifiedNode))
   }
+
+  test("Reflexive target connection splits the original node") {
+    val node = Node()
+    val (source, target) = node.addTarget(node)
+
+    assert(source != target)
+    assert(source.hasTarget(target))
+    assert(target.hasSource(source))
+  }
+
+  test("Reflexive source connection splits the original node") {
+    val node = Node()
+    val (target, source) = node.addSource(node)
+
+    assert(target != source)
+    assert(target.hasSource(source))
+    assert(source.hasTarget(target))
+  }
 }
