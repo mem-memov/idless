@@ -1,13 +1,10 @@
 @main def main: Unit =
   val root = Node()
-  val newSource = root.toNewSource
-  println(newSource)
+  val source = Node()
+  val target = Node()
+  val (rootWithTarget, targetWithRoot) = root.addTarget(target)
+  val (sourceWithRoot, rootWithSource) = source.addTarget(rootWithTarget)
 
-  for target <- newSource.toTarget(1)
-    source <- target.toSource(1)
-    yield
-      println(target)
-      println(source)
 
 
 

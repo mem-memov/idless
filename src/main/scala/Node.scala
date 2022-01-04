@@ -1,3 +1,5 @@
+import scala.collection.Iterator
+
 class Node private (
             sourceBlock: => List[Node],
             targetBlock: => List[Node],
@@ -7,77 +9,71 @@ class Node private (
   private[Node] lazy val sources: List[Node] = sourceBlock
   private[Node] lazy val targets: List[Node] = targetBlock
 
-  def toNewSource: Node =
-    lazy val modifiedTarget: Node = new Node(
-      newSource :: sources,
-      targets,
-      sourceCount + 1,
-      targetCount
-    )
-    lazy val newSource: Node = new Node(
-      Nil,
-      modifiedTarget :: Nil,
-      0,
-      1
-    )
-    newSource
+  def countSources: Int =
+    sourceCount
 
-  def toNewTarget: Node =
-    lazy val modifiedSource: Node = new Node(
-      sources,
-      newTarget :: targets,
-      sourceCount,
-      targetCount + 1
-    )
-    lazy val newTarget: Node = new Node(
-      modifiedSource :: Nil,
-      Nil,
-      1,
-      0
-    )
-    newTarget
+  def countTargets: Int =
+    targetCount
 
-  def toExistingSource(existing: Node): Node =
-    lazy val modifiedTarget: Node = new Node(
-      newSource :: sources,
-      targets,
-      sourceCount + 1,
-      targetCount
-    )
-    lazy val newSource: Node = new Node(
-      existing.sources,
-      modifiedTarget :: existing.targets,
-      existing.sourceCount,
-      existing.targetCount + 1
-    )
-    newSource
+  def sourceIterator(): Iterator[Node]  =
+    sources.iterator
 
-  def toExistingTarget(existing: Node): Node =
-    lazy val modifiedSource: Node = new Node(
-      sources,
-      newTarget :: targets,
-      sourceCount,
-      targetCount + 1
-    )
-    lazy val newTarget: Node = new Node(
-      modifiedSource :: existing.sources,
-      existing.targets,
-      existing.sourceCount + 1,
-      existing.targetCount
-    )
-    newTarget
+  def targetIterator(): Iterator[Node]  =
+    targets.iterator
 
-  def toSource(count: Int): Option[Node] =
-    if count <= 0 || count > sourceCount then
-      None
+  def hasSource(node: Node): Boolean =
+    if sourceCount <= node.targetCount then
+      sources.contains(node)
     else
-      Some(sources.drop(sourceCount - count).head)
+      node.hasTarget(this)
 
-  def toTarget(count: Int): Option[Node] =
-    if count <= 0 || count > targetCount then
-      None
+  def hasTarget(node: Node): Boolean =
+    if targetCount <= node.sourceCount then
+      targets.contains(node)
     else
-      Some(targets.drop(targetCount - count).head)
+      node.hasSource(this)
+
+  def addSource(node: Node): (Node, Node) =
+    if hasSource(node) then
+      (this, node)
+    else
+      if sourceCount <= node.targetCount then
+        lazy val modifiedTarget: Node = new Node(
+          newSource :: sources,
+          targets,
+          sourceCount + 1,
+          targetCount
+        )
+        lazy val newSource: Node = new Node(
+          node.sources,
+          modifiedTarget :: node.targets,
+          node.sourceCount,
+          node.targetCount + 1
+        )
+        (modifiedTarget, newSource)
+      else
+        node.addTarget(this).swap
+
+  def addTarget(node: Node): (Node, Node) =
+    if hasTarget(node) then
+      (this, node)
+    else
+      if targetCount <= node.sourceCount then
+        lazy val modifiedSource: Node = new Node(
+          sources,
+          newTarget :: targets,
+          sourceCount,
+          targetCount + 1
+        )
+        lazy val newTarget: Node = new Node(
+          modifiedSource :: node.sources,
+          node.targets,
+          node.sourceCount + 1,
+          node.targetCount
+        )
+        (modifiedSource, newTarget)
+      else
+        node.addSource(this).swap
 
 object Node:
   def apply() =
