@@ -15,11 +15,11 @@ class Node private (
   def countTargets: Int =
     targetCount
 
-  def sourceIterator(): Iterator[Node]  =
-    sources.iterator
+  def getSources: List[Node]  =
+    sources
 
-  def targetIterator(): Iterator[Node]  =
-    targets.iterator
+  def getTargets: List[Node]  =
+    targets
 
   def hasSource(node: Node): Boolean =
     if sourceCount <= node.targetCount then
