@@ -1,10 +1,10 @@
-import scala.collection.Iterator
+package mem.memov.idless
 
 class Node private (
-            sourceBlock: => List[Node],
-            targetBlock: => List[Node],
-            private[Node] val sourceCount: Int,
-            private[Node] val targetCount: Int
+                     sourceBlock: => List[Node],
+                     targetBlock: => List[Node],
+                     private[Node] val sourceCount: Int,
+                     private[Node] val targetCount: Int
           ):
   private[Node] lazy val sources: List[Node] = sourceBlock
   private[Node] lazy val targets: List[Node] = targetBlock

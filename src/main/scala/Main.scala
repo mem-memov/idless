@@ -1,3 +1,5 @@
+import mem.memov.idless.Node
+
 @main def main: Unit =
   val root = Node()
   val source = Node()
