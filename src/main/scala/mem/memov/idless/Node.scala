@@ -1,80 +1,26 @@
 package mem.memov.idless
 
-class Node private (
-                     sourceBlock: => List[Node],
-                     targetBlock: => List[Node],
-                     private[Node] val sourceCount: Int,
-                     private[Node] val targetCount: Int
-          ):
-  private[Node] lazy val sources: List[Node] = sourceBlock
-  private[Node] lazy val targets: List[Node] = targetBlock
+class Node private (sourceBlock: => Vector[Node], targetBlock: => Vector[Node]):
 
-  def countSources: Int =
-    sourceCount
+  lazy val sources: Vector[Node] = sourceBlock
+  lazy val targets: Vector[Node] = targetBlock
 
-  def countTargets: Int =
-    targetCount
-
-  def getSources: List[Node]  =
-    sources
-
-  def getTargets: List[Node]  =
-    targets
-
-  def hasSource(node: Node): Boolean =
-    if sourceCount <= node.targetCount then
-      sources.contains(node)
+  def withSource(node: Node): Node =
+    if sources.length <= node.targets.length then
+      lazy val modifiedTarget: Node = new Node(sources :+ newSource, targets)
+      lazy val newSource: Node = new Node(node.sources, node.targets :+ modifiedTarget)
+      modifiedTarget
     else
-      node.hasTarget(this)
+      node.withTarget(this).targets.last
 
-  def hasTarget(node: Node): Boolean =
-    if targetCount <= node.sourceCount then
-      targets.contains(node)
+  def withTarget(node: Node): Node =
+    if targets.length <= node.sources.length then
+      lazy val modifiedSource: Node = new Node(sources, targets :+ newTarget)
+      lazy val newTarget: Node = new Node(node.sources :+ modifiedSource, node.targets)
+      modifiedSource
     else
-      node.hasSource(this)
-
-  def addSource(node: Node): (Node, Node) =
-    if hasSource(node) then
-      (this, node)
-    else
-      if sourceCount <= node.targetCount then
-        lazy val modifiedTarget: Node = new Node(
-          newSource :: sources,
-          targets,
-          sourceCount + 1,
-          targetCount
-        )
-        lazy val newSource: Node = new Node(
-          node.sources,
-          modifiedTarget :: node.targets,
-          node.sourceCount,
-          node.targetCount + 1
-        )
-        (modifiedTarget, newSource)
-      else
-        node.addTarget(this).swap
-
-  def addTarget(node: Node): (Node, Node) =
-    if hasTarget(node) then
-      (this, node)
-    else
-      if targetCount <= node.sourceCount then
-        lazy val modifiedSource: Node = new Node(
-          sources,
-          newTarget :: targets,
-          sourceCount,
-          targetCount + 1
-        )
-        lazy val newTarget: Node = new Node(
-          modifiedSource :: node.sources,
-          node.targets,
-          node.sourceCount + 1,
-          node.targetCount
-        )
-        (modifiedSource, newTarget)
-      else
-        node.addSource(this).swap
+      node.withSource(this).sources.last
 
 object Node:
-  def apply() =
-    new Node(Nil, Nil, 0, 0)
+  def empty =
+    new Node(Vector.empty, Vector.empty)

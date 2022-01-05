@@ -5,74 +5,62 @@ import org.scalatest.funsuite.AnyFunSuite
 class NodeSuite extends AnyFunSuite {
 
   test("An empty node has no targets") {
-    val node = Node()
+    val node = Node.empty
 
-    assert(node.countTargets == 0)
-    assert(node.getTargets == Nil)
+    assert(node.targets.isEmpty)
   }
 
   test("An empty node has no sources") {
-    val node = Node()
+    val node = Node.empty
 
-    assert(node.countSources == 0)
-    assert(node.getSources == Nil)
+    assert(node.sources.isEmpty)
   }
 
   test("A node has references to its target") {
-    val node = Node()
-    val target = Node()
-    val (modifiedNode, modifiedTarget) = node.addTarget(target)
+    val node = Node.empty
+    val target = Node.empty
+    val modifiedNode = node.withTarget(target)
 
-    assert(modifiedNode.countTargets == 1)
-    assert(modifiedNode.getTargets == List(modifiedTarget))
-    assert(modifiedNode.hasTarget(modifiedTarget))
+    assert(modifiedNode.targets.length == 1)
   }
 
   test("A node has references to its source") {
-    val node = Node()
-    val source = Node()
-    val (modifiedNode, modifiedSource) = node.addSource(source)
+    val node = Node.empty
+    val source = Node.empty
+    val modifiedNode = node.withSource(source)
 
-    assert(modifiedNode.countSources == 1)
-    assert(modifiedNode.getSources == List(modifiedSource))
-    assert(modifiedNode.hasSource(modifiedSource))
+    assert(modifiedNode.sources.length == 1)
   }
 
   test("A target keeps a reference to node") {
-    val node = Node()
-    val target = Node()
-    val (modifiedNode, modifiedTarget) = node.addTarget(target)
+    val node = Node.empty
+    val target = Node.empty
+    val modifiedNode = node.withTarget(target)
 
-    assert(modifiedTarget.countSources == 1)
-    assert(modifiedTarget.getSources == List(modifiedNode))
-    assert(modifiedTarget.hasSource(modifiedNode))
+    assert(modifiedNode.targets(0).sources.length == 1)
+    assert(modifiedNode.targets(0).sources(0) == modifiedNode)
   }
 
   test("A source keeps a reference to node") {
-    val node = Node()
-    val source = Node()
-    val (modifiedNode, modifiedSource) = node.addSource(source)
+    val node = Node.empty
+    val source = Node.empty
+    val modifiedNode = node.withSource(source)
 
-    assert(modifiedSource.countTargets == 1)
-    assert(modifiedSource.getTargets == List(modifiedNode))
-    assert(modifiedSource.hasTarget(modifiedNode))
+    assert(modifiedNode.sources(0).targets.length == 1)
+    assert(modifiedNode.sources(0).targets(0) == modifiedNode)
   }
 
   test("Reflexive target connection splits the original node") {
-    val node = Node()
-    val (source, target) = node.addTarget(node)
+    val node = Node.empty
+    val modifiedNode = node.withTarget(node)
 
-    assert(source != target)
-    assert(source.hasTarget(target))
-    assert(target.hasSource(source))
+    assert(modifiedNode != modifiedNode.targets(0))
   }
 
   test("Reflexive source connection splits the original node") {
-    val node = Node()
-    val (target, source) = node.addSource(node)
+    val node = Node.empty
+    val modifiedNode = node.withSource(node)
 
-    assert(target != source)
-    assert(target.hasSource(source))
-    assert(source.hasTarget(target))
+    assert(modifiedNode != modifiedNode.sources(0))
   }
 }
