@@ -6,8 +6,8 @@ class Cluster private (nodeBlock: => Vector[Vector[Cluster]]):
 
   def withCluster(thisIndex: Int, thatIndex: Int, that: Cluster): Cluster =
 
-    lazy val thisNode = this.nodes(thisIndex) :+ modifiedThat
-    lazy val thatNode = that.nodes(thatIndex) :+ modifiedThis
+    lazy val thisNode = this.nodes(thisIndex) :+ newThat
+    lazy val thatNode = that.nodes(thatIndex) :+ newThis
 
     lazy val (thisPredecessors, (_ +: thisSuccessors)) = this.nodes.splitAt(thisIndex)
     lazy val (thatPredecessors, (_ +: thatSuccessors)) = that.nodes.splitAt(thatIndex)
@@ -15,10 +15,10 @@ class Cluster private (nodeBlock: => Vector[Vector[Cluster]]):
     lazy val thisNodes = thisPredecessors :+ thisNode :++ thisSuccessors
     lazy val thatNodes = thatPredecessors :+ thatNode :++ thatSuccessors
 
-    lazy val modifiedThis: Cluster = new Cluster(thisNodes)
-    lazy val modifiedThat: Cluster = new Cluster(thatNodes)
+    lazy val newThis: Cluster = new Cluster(thisNodes)
+    lazy val newThat: Cluster = new Cluster(thatNodes)
 
-    modifiedThis
+    newThis
 
   def turn(path: Vector[(Int, Int)]): Cluster =
 
@@ -27,6 +27,7 @@ class Cluster private (nodeBlock: => Vector[Vector[Cluster]]):
     )
 
 object Cluster {
-  def empty: Cluster =
-    new Cluster(Vector(Vector.empty))
+  def apply(n: Int): Cluster =
+    require(n > 0)
+    new Cluster(Vector.fill(n)(Vector.empty))
 }
