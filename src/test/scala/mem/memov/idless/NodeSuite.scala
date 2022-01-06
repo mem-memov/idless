@@ -2,7 +2,7 @@ package mem.memov.idless
 
 import org.scalatest.funsuite.AnyFunSuite
 
-class NodeSuite extends AnyFunSuite {
+class NodeSuite extends AnyFunSuite:
 
   test("An empty node has no targets") {
     val node = Node.empty
@@ -63,4 +63,4 @@ class NodeSuite extends AnyFunSuite {
 
     assert(modifiedNode != modifiedNode.sources(0))
   }
-}
+
