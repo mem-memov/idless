@@ -1,33 +1,42 @@
 package mem.memov.idless
 
-class Cluster private (nodeBlock: => Vector[Vector[Cluster]]):
+import scala.collection.mutable.ArrayBuffer
 
-  lazy val nodes: Vector[Vector[Cluster]] = nodeBlock
+class Cluster (private[Cluster] val nodes: ArrayBuffer[ArrayBuffer[Cluster]]):
 
-  def withCluster(thisIndex: Int, thatIndex: Int, that: Cluster): Cluster =
+  def link(thisIndex: Int, thatIndex: Int, that: Cluster): Unit =
 
-    lazy val thisNode = this.nodes(thisIndex) :+ newThat
-    lazy val thatNode = that.nodes(thatIndex) :+ newThis
+    if thisIndex >= this.nodes.length then
+      this.nodes.appendAll(
+        ArrayBuffer.fill(1 + thisIndex - this.nodes.length)(ArrayBuffer.empty)
+      )
 
-    lazy val (thisPredecessors, (_ +: thisSuccessors)) = this.nodes.splitAt(thisIndex)
-    lazy val (thatPredecessors, (_ +: thatSuccessors)) = that.nodes.splitAt(thatIndex)
+    if thatIndex >= that.nodes.length then
+      that.nodes.appendAll(
+        ArrayBuffer.fill(1 + thatIndex - that.nodes.length)(ArrayBuffer.empty)
+      )
 
-    lazy val thisNodes = thisPredecessors :+ thisNode :++ thisSuccessors
-    lazy val thatNodes = thatPredecessors :+ thatNode :++ thatSuccessors
+    this.nodes(thisIndex).append(that)
+    that.nodes(thatIndex).append(this)
 
-    lazy val newThis: Cluster = new Cluster(thisNodes)
-    lazy val newThat: Cluster = new Cluster(thatNodes)
-
-    newThis
-
-  def turn(path: Vector[(Int, Int)]): Cluster =
-
+  def beat(path: Vector[Step]): Cluster =
     path.foldLeft(this)(
-      (cluster, step) => cluster.nodes(step._1)(step._2)
+      (cluster, step) =>
+
+        if step.dimension >= cluster.nodes.length then
+          this.nodes.appendAll(
+            ArrayBuffer.fill(1 + step.dimension - cluster.nodes.length)(ArrayBuffer.empty)
+          )
+
+        if step.distance >= this.nodes(step.dimension).length then
+          this.nodes(step.dimension).appendAll(
+            ArrayBuffer.fill(1 + step.distance - this.nodes(step.dimension).length)(Cluster.empty)
+          )
+
+        this.nodes(step.dimension)(step.distance)
     )
 
-object Cluster {
-  def apply(n: Int): Cluster =
-    require(n > 0)
-    new Cluster(Vector.fill(n)(Vector.empty))
-}
+object Cluster:
+  def empty: Cluster =
+    new Cluster(ArrayBuffer.empty)
+

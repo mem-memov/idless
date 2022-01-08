@@ -4,43 +4,33 @@ import org.scalatest.funsuite.AnyFunSuite
 
 class ClusterSuite  extends AnyFunSuite:
 
-  test("It builds a plain graph with 2 nodes") {
-    val a = Cluster(1)
-    val b = Cluster(1)
+  test("It builds a plain graph with 2 vertices") {
+    val a = Cluster.empty
+    val b = Cluster.empty
 
-    val a1 = a.withCluster(0, 0, b)
+    a.link(0, 0, b)
 
-    assert(a1.nodes(0)(0).nodes(0)(0) == a1)
+    assert(a.beat(Vector(Step(0, 0))) == b)
+    assert(b.beat(Vector(Step(0, 0))) == a)
   }
 
-  test("It builds a directed graph with 2 nodes") {
-    val a = Cluster(2)
-    val b = Cluster(2)
+  test("It builds a directed graph with 2 vertices and 1 arrow") {
+    val a = Cluster.empty
+    val b = Cluster.empty
 
-    val a1 = a.withCluster(0, 1, b)
+    a.link(0, 1, b)
 
-    assert(a1.nodes(0)(0).nodes(1)(0) == a1)
+    assert(a.beat(Vector(Step(0, 0))) == b)
+    assert(b.beat(Vector(Step(1, 0))) == a)
   }
 
-  test("It builds a bidirected graph with 2 nodes") {
-    val a = Cluster(2)
-    val b = Cluster(2)
+  test("It builds a directed graph with 2 vertices and 2 arrow") {
+    val a = Cluster.empty
+    val b = Cluster.empty
 
-    val a1 = a.withCluster(0, 1, b)
+    a.link(0, 1, b)
+    b.link(1, 0, a)
 
-    println(a1)
-    println(a1.nodes)
-    println(a1.turn(Vector((0, 0))))
-    println(a1.turn(Vector((0, 0))).nodes)
-    println()
-
-    val a2 = a1.withCluster(1, 0, a1.turn(Vector((0, 0))))
-
-    println(a2)
-    println(a2.nodes)
-    println(a2.nodes(0)(0).nodes)
-    println(a2.nodes(1)(0).nodes)
-
-
-//    assert(a2.nodes(0)(0).nodes(1)(0) == a2)
+    assert(a.beat(Vector(Step(0, 1))) == b)
+    assert(b.beat(Vector(Step(1, 0))) == a)
   }
